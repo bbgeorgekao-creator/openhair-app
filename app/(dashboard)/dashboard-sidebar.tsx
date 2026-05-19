@@ -18,7 +18,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { VercelIcon } from "@/components/icons";
 import { UserMenu } from "@/components/user-menu";
 import { SignInModal } from "@/components/sign-in-modal";
 import { cn } from "@/lib/utils";
@@ -40,12 +39,12 @@ function formatTimeAgo(dateStr: string): string {
   const then = new Date(dateStr).getTime();
   const diffMs = now - then;
   const minutes = Math.floor(diffMs / 60_000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return "剛剛";
+  if (minutes < 60) return `${minutes} 分鐘前`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return `${hours} 小時前`;
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
+  if (days < 30) return `${days} 天前`;
   return new Date(dateStr).toLocaleDateString();
 }
 
@@ -124,11 +123,23 @@ export function DashboardSidebar({
         <div className="flex items-center justify-between px-2 py-1">
           <Link
             href="/"
-            className="flex items-center"
+            className="flex items-center gap-2"
             onClick={onNavigate}
-            aria-label="Home"
+            aria-label="Open Hair 首頁"
           >
-            <VercelIcon className="size-4" />
+            {/* Eva 漸層圓「E」+ Open Hair 文字 · 跟 chat 頁 Eva 頭像同 motif */}
+            <span
+              className="flex size-7 items-center justify-center rounded-full text-[13px] font-bold text-white"
+              style={{
+                background: "linear-gradient(135deg, #534AB7, #8074C1)",
+              }}
+              aria-hidden="true"
+            >
+              E
+            </span>
+            <span className="text-sm font-semibold text-foreground">
+              Open Hair
+            </span>
           </Link>
           {onToggleSidebar && (
             <Button
@@ -148,7 +159,7 @@ export function DashboardSidebar({
           className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-primary/10 hover:text-foreground"
         >
           <Plus className="size-4" />
-          New question
+          新對話
         </Link>
       </div>
 
@@ -171,7 +182,7 @@ export function DashboardSidebar({
                 className="block px-2 py-1.5 pr-8 text-sm"
               >
                 <div className="truncate text-sm font-medium">
-                  {session.title || "Untitled"}
+                  {session.title || "未命名對話"}
                 </div>
                 <div
                   className="truncate text-[11px] text-muted-foreground"
@@ -194,7 +205,7 @@ export function DashboardSidebar({
                     onClick={() => void deleteSession(session.id)}
                   >
                     <Trash2 className="size-4" />
-                    Delete
+                    刪除
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -215,7 +226,7 @@ export function DashboardSidebar({
             >
               <span className="flex items-center gap-2">
                 <LogIn className="size-4" />
-                Sign in
+                登入
               </span>
               <ArrowRight className="size-3.5 text-muted-foreground" />
             </Button>

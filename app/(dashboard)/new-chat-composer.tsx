@@ -5,15 +5,9 @@ import { useRouter } from "next/navigation";
 import { SignInModal } from "@/components/sign-in-modal";
 import {
   ArrowUp,
-  BookOpen,
   ChevronDown,
-  Code,
   ExternalLink,
-  FileText,
   Loader2,
-  Search,
-  Sparkles,
-  Zap,
 } from "lucide-react";
 import { GitHubIcon, NotionIcon, SlackIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
@@ -32,22 +26,30 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+// 首頁中央輪播大標題（4 秒換一句）·「破冰」場合的柔軟邀請
+// 70 顧問的專業留到對話真的開始後才出場；對齊概念圖 03 onboard 的氣質
 const HEADING_PROMPTS = [
-  "Ask about a company process",
-  "Find context across your tools",
-  "Look up a recent decision",
-  "Understand a codebase change",
-  "Search your team knowledge",
+  "想聊聊妳的頭髮嗎？",
+  "今天的頭髮，還順手嗎？",
+  "Eva 在這，妳想說點什麼？",
+  "最近髮況有沒有什麼想問？",
+  "告訴我妳今天的頭髮故事",
 ];
 
+// 6 個常見入口 pill · 互補 chat 頁的 4 個 quick reply chips（不重複）
+// chat chips：先試染看看 / 介紹設計師 / 推薦洗髮精 / 我只想聊聊
+// 階段 2-3 可改 Eva 動態生成
 const SUGGESTION_PILLS = [
-  { label: "Research", prompt: "Research the latest decisions around our migration plan", icon: <Search className="size-3.5" /> },
-  { label: "Summarize", prompt: "Summarize last week's engineering updates across all channels", icon: <FileText className="size-3.5" /> },
-  { label: "Explain code", prompt: "Explain how authentication works in our main API repo", icon: <Code className="size-3.5" /> },
-  { label: "Find docs", prompt: "Find the onboarding documentation for new hires", icon: <BookOpen className="size-3.5" /> },
-  { label: "Draft", prompt: "Draft a project kickoff message for a new feature", icon: <Sparkles className="size-3.5" /> },
-  { label: "Catch up", prompt: "What's been happening in the product channel this week?", icon: <Zap className="size-3.5" /> },
+  { label: "🌱 染色建議", prompt: "我想換顏色，給我點建議" },
+  { label: "💆 看看我的頭髮", prompt: "幫我看看我最近的髮況" },
+  { label: "🧴 推薦產品", prompt: "推薦適合我的洗髮精" },
+  { label: "✂️ 想找設計師", prompt: "我想找設計師，幫我介紹" },
+  { label: "🌿 頭皮問題", prompt: "我的頭皮最近有點不舒服" },
+  { label: "✨ 想換風格", prompt: "想換個造型但沒方向" },
 ];
+
+// MCP integrations dropdown · M1 階段 1 隱藏，元件本身保留（階段 2-3 可能用到）
+const SHOW_INTEGRATIONS = false;
 
 export function NewChatComposer({
   isAuthenticated = true,
@@ -155,7 +157,7 @@ export function NewChatComposer({
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Explore a topic..."
+            placeholder="跟 Eva 說點什麼..."
             rows={2}
             disabled={creating}
             className="max-h-[160px] min-h-[72px] w-full resize-none bg-transparent px-5 pt-4 pb-2 text-[15px] leading-relaxed outline-none placeholder:text-muted-foreground/60 disabled:opacity-50"
@@ -163,24 +165,26 @@ export function NewChatComposer({
 
           <div className="flex items-center justify-between px-4 py-2.5">
             <div className="flex min-w-0 items-center gap-1.5">
-              <IntegrationsDropdown
-                mcpState={mcpState}
-                mcpConnections={mcpConnections}
-                onToggle={toggleMcp}
-                onLogin={(serverName) => {
-                  if (serverName === "slack") {
-                    setShowSlackSetup(true);
-                  } else {
-                    window.location.href = `/api/mcp-auth/${serverName}`;
-                  }
-                }}
-                onLogout={async (serverName) => {
-                  await fetch(`/api/mcp-auth/${serverName}`, {
-                    method: "DELETE",
-                  });
-                  window.location.reload();
-                }}
-              />
+              {SHOW_INTEGRATIONS && (
+                <IntegrationsDropdown
+                  mcpState={mcpState}
+                  mcpConnections={mcpConnections}
+                  onToggle={toggleMcp}
+                  onLogin={(serverName) => {
+                    if (serverName === "slack") {
+                      setShowSlackSetup(true);
+                    } else {
+                      window.location.href = `/api/mcp-auth/${serverName}`;
+                    }
+                  }}
+                  onLogout={async (serverName) => {
+                    await fetch(`/api/mcp-auth/${serverName}`, {
+                      method: "DELETE",
+                    });
+                    window.location.reload();
+                  }}
+                />
+              )}
             </div>
             <button
               type="submit"
@@ -210,59 +214,11 @@ export function NewChatComposer({
               }}
               className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 px-3.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-foreground"
             >
-              {pill.icon}
               {pill.label}
             </button>
           ))}
         </div>
       </form>
-
-      <p className="absolute bottom-4 left-0 right-0 text-center text-xs text-muted-foreground/40">
-        <a
-          href="https://vercel.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="transition-colors hover:text-muted-foreground"
-        >
-          Vercel
-        </a>
-        {" + "}
-        <a
-          href="https://platform.claude.com/docs/en/managed-agents/overview"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="transition-colors hover:text-muted-foreground"
-        >
-          Claude Managed Agents
-        </a>
-        {" "}&middot;{" "}
-        <a
-          href="https://vercel.com/kb/guide/claude-managed-agent-vercel"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline transition-colors hover:text-muted-foreground"
-        >
-          Guide
-        </a>
-        {" "}&middot;{" "}
-        <a
-          href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fclaude-managed-agents&project-name=claude-managed-agents&repository-name=claude-managed-agents&env=ANTHROPIC_API_KEY%2CANTHROPIC_AGENT_ID%2CANTHROPIC_ENVIRONMENT_ID%2CBETTER_AUTH_SECRET%2CVERCEL_CLIENT_ID%2CVERCEL_CLIENT_SECRET%2CTOKEN_ENCRYPTION_KEY&envDescription=Configure+your+Anthropic+agent+and+Vercel+OAuth+credentials.&envLink=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fclaude-managed-agents%23local-setup&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%5D&demo-title=Internal+Knowledge+Agent&demo-description=An+internal+knowledge+assistant+powered+by+Claude+Managed+Agents.+Connect+GitHub%2C+Notion%2C+and+Slack+via+MCP+to+search+across+your+tools."
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline transition-colors hover:text-muted-foreground"
-        >
-          Deploy your own
-        </a>
-        {" "}&middot;{" "}
-        <a
-          href="https://github.com/vercel-labs/claude-managed-agents-starter"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="align-middle transition-colors hover:text-muted-foreground"
-        >
-          <GitHubIcon className="inline size-4 align-middle" />
-        </a>
-      </p>
 
       <SignInModal open={showSignIn} onOpenChange={setShowSignIn} />
       <SlackSetupModal

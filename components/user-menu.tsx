@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { authClient } from "@/lib/auth-client";
+import { createClient } from "@/lib/supabase/client";
 
 interface UserData {
   name: string;
@@ -19,7 +19,10 @@ interface UserData {
 }
 
 async function handleSignOut() {
-  await authClient.signOut({ fetchOptions: { onSuccess: () => { window.location.href = "/"; } } });
+  const supabase = createClient();
+  await supabase.auth.signOut();
+  // 整頁 reload — server component 重抓 session、proxy 再次擋 /chat/*
+  window.location.href = "/";
 }
 
 export function UserMenu({ user }: { user: UserData }) {
@@ -53,7 +56,7 @@ export function UserMenu({ user }: { user: UserData }) {
           onClick={() => void handleSignOut()}
         >
           <LogOut className="mr-2 size-4" />
-          Sign out
+          登出
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
